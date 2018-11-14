@@ -80,8 +80,9 @@ elseif(IOS)
 endif()
 
 ##############################################
-
-# add_subdirectory(examples)
+if(NOT ANDROID AND NOT IOS)
+    add_subdirectory(examples)
+endif()
 # add_subdirectory(benchmark)
 add_subdirectory(src)
 if(NOT ANDROID AND NOT IOS)

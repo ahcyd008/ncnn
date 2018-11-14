@@ -24,6 +24,9 @@
 
 namespace ncnn {
 
+    
+static std::vector<std::string> logs;
+
 class Extractor;
 class Net
 {
@@ -97,6 +100,8 @@ public:
     // changes should be applied before loading network structure and weight
     // enabled by default
     int use_int8_inference;
+
+    std::vector<std::string> get_logs();
 
 protected:
     friend class Extractor;

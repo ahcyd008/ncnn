@@ -30,3 +30,6 @@ target_link_libraries(mobilenetssd ncnn ${OpenCV_LIBS})
 
 add_executable(squeezenetssd squeezenetssd.cpp)
 target_link_libraries(squeezenetssd ncnn ${OpenCV_LIBS})
+
+add_executable(hed hed.cpp)
+target_link_libraries(hed ncnn ${OpenCV_LIBS})

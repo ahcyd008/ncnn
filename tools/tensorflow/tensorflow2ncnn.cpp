@@ -27,6 +27,8 @@
 #include <google/protobuf/text_format.h>
 #include <google/protobuf/message.h>
 
+using namespace std;
+
 #include "graph.pb.h"
 
 static bool read_proto_from_binary(const char* filepath, google::protobuf::Message* message)
@@ -136,6 +138,137 @@ static int parse_tensor_reduction_dim(const tensorflow::TensorProto& tensor)
     return dim;
 }
 
+int findNextBiasAdd(int begin, tensorflow::GraphDef& graph, std::map<std::string, tensorflow::TensorProto>& binaryop_consts, std::map<std::string, tensorflow::TensorProto>& weights)
+{
+    int node_count = graph.node_size();
+    for (int i=begin; i<node_count; i++) {
+        const tensorflow::NodeDef &node = graph.node(i);
+        if(node.op() == "Identity" || node.op() == "Const"){
+            if (binaryop_consts.find(node.name()) != binaryop_consts.end())
+            {
+                continue;
+            }
+            if (weights.find(node.name()) != weights.end())
+            {
+                continue;
+            }
+        }
+        if(node.op() == "BiasAdd" && (strstr(node.name().c_str(), "conv") != NULL)){
+            return i;
+        }
+        break;
+    }
+    return -1;
+}
+
+void write_biases(tensorflow::TensorProto tensor, FILE* bp){
+    const tensorflow::TensorShapeProto& shape = tensor.tensor_shape();
+
+    int w = 0;
+    int h = 0;
+    int c = 0;
+
+    if (shape.dim_size() == 1)
+    {
+        w = shape.dim(0).size();
+    }
+    else if (shape.dim_size() == 2)
+    {
+        h = shape.dim(0).size();
+        w = shape.dim(1).size();
+    }
+    else if (shape.dim_size() == 3)
+    {
+        c = shape.dim(2).size();
+        h = shape.dim(0).size();
+        w = shape.dim(1).size();
+    }
+
+    int weight_data_size = 0;
+
+    if (!tensor.tensor_content().empty())
+    {
+        if (tensor.dtype() == 1)// float
+        {
+            const float* data = reinterpret_cast<const float*>(tensor.tensor_content().c_str());
+            weight_data_size = tensor.tensor_content().size() / sizeof(float);
+
+            if (c == 0){
+                fwrite(data, sizeof(float), weight_data_size, bp);
+            }
+            else
+            {
+                float tmp;
+                // h-w-c to c-h-w
+                for (int p=0; p<c; p++)
+                {
+                    for (int i=0; i<h; i++)
+                    {
+                        for (int j=0; j<w; j++)
+                        {
+                            tmp = data[i*w*c + j*c + p];
+                            fwrite(&tmp, sizeof(float), 1, bp);
+                        }
+                    }
+                }
+            }
+        }
+        else if (tensor.dtype() == 3)// int32
+        {
+            const int* data = reinterpret_cast<const int*>(tensor.tensor_content().c_str());
+            weight_data_size = tensor.tensor_content().size() / sizeof(int);
+
+            float tmp;
+            if (c == 0)
+            {
+                for (int i=0; i<weight_data_size; i++)
+                {
+                    tmp = data[i];
+                    fwrite(&tmp, sizeof(float), 1, bp);
+                }
+            }
+            else
+            {
+                // h-w-c to c-h-w
+                for (int p=0; p<c; p++)
+                {
+                    for (int i=0; i<h; i++)
+                    {
+                        for (int j=0; j<w; j++)
+                        {
+                            tmp = data[i*w*c + j*c + p];
+                            fwrite(&tmp, sizeof(float), 1, bp);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    else
+    {
+        if (tensor.dtype() == 1)// float
+        {
+            float val = tensor.float_val(0);
+            fwrite(&val, sizeof(float), 1, bp);
+        }
+    }
+}
+
+class ParamLine{
+public:
+    string op;
+    string name;
+    int input_size;
+    int output_size;
+    string tops;
+    string bottoms;
+    string params;
+    std::set<std::string> input_names;
+    std::set<std::string> output_names;
+
+    int kw, kh, sw, sh;
+};
+
 int main(int argc, char** argv)
 {
     const char* tensorflowpb = argv[1];
@@ -160,7 +293,7 @@ int main(int argc, char** argv)
 
     int node_count = graph.node_size();
 
-//     fprintf(stderr, "node_count = %d\n\n", node_count);
+    // fprintf(stderr, "node_count = %d\n\n", node_count);
 
     // node reference
     std::map<std::string, int> node_reference;
@@ -176,7 +309,9 @@ int main(int argc, char** argv)
 
     // global definition line
     // [layer count] [blob count]
-    std::set<std::string> blob_names;
+    //out params
+    vector<ParamLine> param_lines;
+
     for (int i=0; i<node_count; i++)
     {
         const tensorflow::NodeDef& node = graph.node(i);
@@ -251,14 +386,12 @@ int main(int argc, char** argv)
         for (int j=0; j<node.input_size(); j++)
         {
             const std::string& input_name = node.input(j);
-//             fprintf(stderr, "input = %s\n", input_name.c_str());
+            // printf(stderr, "input = %s\n", input_name.c_str());
 
             if (weights.find(input_name) != weights.end())
             {
                 continue;
             }
-
-            blob_names.insert(input_name);
 
             if (node_reference.find(input_name) == node_reference.end())
             {
@@ -271,8 +404,7 @@ int main(int argc, char** argv)
         }
 
         // output
-//         fprintf(stderr, "output = %s\n", output_name.c_str());
-        blob_names.insert(output_name);
+        // fprintf(stderr, "output = %s\n", output_name.c_str());
     }
 
     // remove node_reference entry with reference equals to one
@@ -287,34 +419,39 @@ int main(int argc, char** argv)
         else
         {
             splitncnn_blob_count += it->second;
-//             fprintf(stderr, "%s %d\n", it->first.c_str(), it->second);
+            // fprintf(stderr, "%s %d\n", it->first.c_str(), it->second);
             ++it;
         }
     }
-
-    fprintf(pp, "%lu %lu\n", node_count + node_reference.size() - weights.size(), blob_names.size() + splitncnn_blob_count);
 
     int internal_split = 0;
 
     for (int i=0; i<node_count; i++)
     {
         const tensorflow::NodeDef& node = graph.node(i);
+        ParamLine p_line;
 
         // layer definition line, repeated
         // [type] [name] [bottom blob count] [top blob count] [bottom blobs] [top blobs] [layer specific params]
-//         fprintf(pp, "%-16s %-16s %d %d", layer.type().c_str(), layer.name().c_str(), node.input_size(), layer.top_size());
+        // fprintf(pp, "%-16s %-16s %d %d", layer.type().c_str(), layer.name().c_str(), node.input_size(), layer.top_size());
 
-        if (node.op() == "Add" || node.op() == "BiasAdd")
+        if (node.op() == "Add")
         {
-            fprintf(pp, "%-16s", "BinaryOp");
+            p_line.op = "BinaryOp";
+        }
+        else if(node.op() == "BiasAdd"){
+            if((strstr(node.name().c_str(), "conv") != NULL)){
+                continue;
+            }
+            p_line.op = "BinaryOp";
         }
         else if (node.op() == "AvgPool")
         {
-            fprintf(pp, "%-16s", "Pooling");
+            p_line.op = "Pooling";
         }
         else if (node.op() == "Concat" || node.op() == "ConcatV2")
         {
-            fprintf(pp, "%-16s", "Concat");
+            p_line.op = "Concat";
         }
         else if (node.op() == "Const")
         {
@@ -322,7 +459,10 @@ int main(int argc, char** argv)
             tensorflow::TensorProto tensor;
             if (get_tensor_proto(binaryop_consts, node, tensor))
             {
-                fprintf(pp, "%-16s", "MemoryData");
+                if((strstr(node.name().c_str(), "biases/read") != NULL) && (strstr(node.name().c_str(), "conv") != NULL)){
+                    continue;
+                }
+                p_line.op = "MemoryData";
             }
             else
             {
@@ -331,27 +471,35 @@ int main(int argc, char** argv)
         }
         else if (node.op() == "Conv2D")
         {
-            fprintf(pp, "%-16s", "Convolution");
+            p_line.op = "Convolution";
+        }
+        else if (node.op() == "Conv2DBackpropInput")
+        {
+            p_line.op = "Deconvolution";
+        }
+        else if(node.op() == "FusedBatchNorm")
+        {
+            p_line.op = "BatchNorm";
         }
         else if (node.op() == "DepthwiseConv2dNative")
         {
-            fprintf(pp, "%-16s", "ConvolutionDepthWise");
+            p_line.op = "ConvolutionDepthWise";
         }
         else if (node.op() == "Div" || node.op() == "RealDiv")
         {
-            fprintf(pp, "%-16s", "BinaryOp");
+            p_line.op = "BinaryOp";
         }
         else if (node.op() == "Exp")
         {
-            fprintf(pp, "%-16s", "UnaryOp");
+            p_line.op = "UnaryOp";
         }
         else if (node.op() == "ExpandDims")
         {
-            fprintf(pp, "%-16s", "ExpandDims");
+            p_line.op = "ExpandDims";
         }
         else if (node.op() == "Floor")
         {
-            fprintf(pp, "%-16s", "UnaryOp");
+            p_line.op = "UnaryOp";
         }
         else if (node.op() == "Identity")
         {
@@ -359,11 +507,14 @@ int main(int argc, char** argv)
             tensorflow::TensorProto tensor;
             if (get_tensor_proto(binaryop_consts, node, tensor))
             {
-                fprintf(pp, "%-16s", "MemoryData");
+                if((strstr(node.name().c_str(), "biases/read") != NULL) && (strstr(node.name().c_str(), "conv") != NULL)){
+                    continue;
+                }
+                p_line.op = "MemoryData";
             }
             else if (dropouts.find(node.name()) != dropouts.end())
             {
-                fprintf(pp, "%-16s", "Dropout");
+                p_line.op = "Dropout";
             }
             else
             {
@@ -372,11 +523,11 @@ int main(int argc, char** argv)
         }
         else if (node.op() == "LRN")
         {
-            fprintf(pp, "%-16s", "LRN");
+            p_line.op = "LRN";
         }
         else if (node.op() == "MatMul")
         {
-            fprintf(pp, "%-16s", "InnerProduct");
+            p_line.op = "MatMul";
         }
         else if (node.op() == "Max" || node.op() == "Maximum")
         {
@@ -384,16 +535,16 @@ int main(int argc, char** argv)
             tensorflow::TensorProto tensor;
             if (find_tensor_proto(weights, node, tensor))
             {
-                fprintf(pp, "%-16s", "Reduction");
+                p_line.op = "Reduction";
             }
             else
             {
-                fprintf(pp, "%-16s", "BinaryOp");
+                p_line.op = "BinaryOp";
             }
         }
         else if (node.op() == "MaxPool")
         {
-            fprintf(pp, "%-16s", "Pooling");
+            p_line.op = "Pooling";
         }
         else if (node.op() == "Min" || node.op() == "Minimum")
         {
@@ -401,20 +552,20 @@ int main(int argc, char** argv)
             tensorflow::TensorProto tensor;
             if (find_tensor_proto(weights, node, tensor))
             {
-                fprintf(pp, "%-16s", "Reduction");
+                p_line.op = "Reduction";
             }
             else
             {
-                fprintf(pp, "%-16s", "BinaryOp");
+                p_line.op = "BinaryOp";
             }
         }
         else if (node.op() == "Mul")
         {
-            fprintf(pp, "%-16s", "BinaryOp");
+            p_line.op = "BinaryOp";
         }
         else if (node.op() == "Neg")
         {
-            fprintf(pp, "%-16s", "UnaryOp");
+            p_line.op = "UnaryOp";
         }
         else if (node.op() == "NoOp")
         {
@@ -422,59 +573,59 @@ int main(int argc, char** argv)
         }
         else if (node.op() == "Pad")
         {
-            fprintf(pp, "%-16s", "Padding");
+            p_line.op = "Padding";
         }
         else if (node.op() == "Placeholder")
         {
-            fprintf(pp, "%-16s", "Input");
+            p_line.op = "Input";
         }
         else if (node.op() == "Prod")
         {
-            fprintf(pp, "%-16s", "Reduction");
+            p_line.op = "Reduction";
         }
         else if (node.op() == "Reciprocal")
         {
-            fprintf(pp, "%-16s", "UnaryOp");
+            p_line.op = "UnaryOp";
         }
         else if (node.op() == "Relu")
         {
-            fprintf(pp, "%-16s", "ReLU");
+            p_line.op = "ReLU";
         }
         else if (node.op() == "Reshape")
         {
-            fprintf(pp, "%-16s", "Reshape");
+            p_line.op = "Reshape";
         }
         else if (node.op() == "Rsqrt")
         {
-            fprintf(pp, "%-16s", "UnaryOp");
+            p_line.op = "UnaryOp";
         }
         else if (node.op() == "Sigmoid")
         {
-            fprintf(pp, "%-16s", "Sigmoid");
+            p_line.op = "Sigmoid";
         }
         else if (node.op() == "Softmax")
         {
-            fprintf(pp, "%-16s", "Softmax");
+            p_line.op = "Softmax";
         }
         else if (node.op() == "Square")
         {
-            fprintf(pp, "%-16s", "UnaryOp");
+            p_line.op = "UnaryOp";
         }
         else if (node.op() == "Squeeze")
         {
-            fprintf(pp, "%-16s", "Squeeze");
+            p_line.op = "Squeeze";
         }
         else if (node.op() == "Sub")
         {
-            fprintf(pp, "%-16s", "BinaryOp");
+            p_line.op = "BinaryOp";
         }
         else if (node.op() == "Sum")
         {
-            fprintf(pp, "%-16s", "Reduction");
+            p_line.op = "Reduction";
         }
         else
         {
-            fprintf(pp, "%-16s", node.op().c_str());
+            p_line.op = node.op().c_str();
             fprintf(stderr, "%s not supported yet !\nn", node.op().c_str());
         }
 
@@ -488,7 +639,9 @@ int main(int argc, char** argv)
             }
         }
 
-        fprintf(pp, " %-32s %d 1", node.name().c_str(), input_size);
+        p_line.name = node.name();
+        p_line.input_size = input_size;
+        p_line.output_size = 1;
 
         for (int j=0; j<node.input_size(); j++)
         {
@@ -508,16 +661,18 @@ int main(int argc, char** argv)
                 sprintf(splitsuffix, "_splitncnn_%d", refidx);
                 input_name = input_name + splitsuffix;
             }
-
-            fprintf(pp, " %s", input_name.c_str());
+            if(p_line.tops.empty()){
+                p_line.tops = input_name;
+            } else {
+                p_line.tops = p_line.tops + " " + input_name;
+            }
+            p_line.input_names.insert(input_name);
         }
-
-        fprintf(pp, " %s", node.name().c_str());
 
         if (node.op() == "Add" || node.op() == "BiasAdd")
         {
             int op_type = 0;
-            fprintf(pp, " 0=%d", op_type);
+            p_line.params = "0="+to_string(op_type);
         }
         else if (node.op() == "AvgPool")
         {
@@ -561,14 +716,14 @@ int main(int argc, char** argv)
                 }
             }
 
-            fprintf(pp, " 0=%d", pooling_type);
-            fprintf(pp, " 1=%d", kernel_size_w);
-            fprintf(pp, " 11=%d", kernel_size_h);
-            fprintf(pp, " 2=%d", stride_w);
-            fprintf(pp, " 12=%d", stride_h);
-            fprintf(pp, " 3=%d", pad);
-            fprintf(pp, " 4=%d", global_pooling);
-            fprintf(pp, " 5=%d", pad_mode);
+            p_line.params  = "0="+to_string(pooling_type);
+            p_line.params += " 1=" + to_string(kernel_size_w);
+            p_line.params += " 11=" + to_string(kernel_size_h);
+            p_line.params += " 2=" + to_string(stride_w);
+            p_line.params += " 12=" + to_string(stride_h);
+            p_line.params += " 3=" + to_string(pad);
+            p_line.params += " 4=" + to_string(global_pooling);
+            p_line.params += " 5=" + to_string(pad_mode);
         }
         else if (node.op() == "Concat" || node.op() == "ConcatV2")
         {
@@ -576,7 +731,7 @@ int main(int argc, char** argv)
             if (find_tensor_proto(weights, node, tensor))
             {
                 // TODO
-//                 int axis = tensor.int_val(0);
+                //   int axis = tensor.int_val(0);
             }
         }
         else if (node.op() == "Const" || node.op() == "Identity")
@@ -680,9 +835,9 @@ int main(int argc, char** argv)
                     }
                 }
 
-                fprintf(pp, " 0=%d", w);
-                fprintf(pp, " 1=%d", h);
-                fprintf(pp, " 2=%d", c);
+                p_line.params  = "0="+to_string(w);
+                p_line.params += " 1=" + to_string(h);
+                p_line.params += " 2=" + to_string(c);
             }
         }
         else if (node.op() == "Conv2D")
@@ -777,7 +932,7 @@ int main(int argc, char** argv)
                             {
                                 for (int j=0; j<kernel_size_w; j++)
                                 {
-                                    tmp = data[i*kernel_size_w*num_input*num_output + j*num_input*num_output + q*num_output + p];
+                                    tmp = data[i*kernel_size_w*num_input*num_output + j*num_input*num_output + q*num_output + p];//[h,w,out_channels, in_channels]
                                     fwrite(&tmp, sizeof(float), 1, bp);
                                 }
                             }
@@ -786,16 +941,332 @@ int main(int argc, char** argv)
                 }
             }
 
-            fprintf(pp, " 0=%d", num_output);
-            fprintf(pp, " 1=%d", kernel_size_w);
-            fprintf(pp, " 11=%d", kernel_size_h);
-            fprintf(pp, " 2=%d", dilation_w);
-            fprintf(pp, " 12=%d", dilation_h);
-            fprintf(pp, " 3=%d", stride_w);
-            fprintf(pp, " 13=%d", stride_h);
-            fprintf(pp, " 4=%d", pad);
-            fprintf(pp, " 5=%d", bias_term);
-            fprintf(pp, " 6=%d", weight_data_size);
+            int bias_index = findNextBiasAdd(i+1, graph, binaryop_consts, weights);
+            if(bias_index > 0){
+                const tensorflow::NodeDef& node_bias = graph.node(bias_index);
+                tensorflow::TensorProto tensor_bias;
+                std::string bias_input_name;
+                bool has_bias = false;
+                for (int bi=0; bi<node_bias.input_size(); bi++)
+                {
+                    const std::string& tmp = node_bias.input(bi);
+                    if(strstr(tmp.c_str(), "biases/read") != NULL){
+                        bias_input_name = tmp;
+                        const std::map<std::string, tensorflow::TensorProto>::const_iterator it = binaryop_consts.find(bias_input_name);
+                        if (it != binaryop_consts.end())
+                        {
+                            tensor_bias = it->second;
+                            has_bias = true;
+                        }
+                        break;
+                    }
+                }
+                if(has_bias){
+                    bias_term = 1;
+                    p_line.name = node_bias.name();
+                    write_biases(tensor_bias, bp);
+                }
+            }
+            p_line.kw = kernel_size_w;
+            p_line.kh = kernel_size_h;
+            p_line.sw = stride_w;
+            p_line.sh = stride_h;
+            p_line.params  = "0="+to_string(num_output);
+            p_line.params += " 1=" + to_string(kernel_size_w);
+            p_line.params += " 11=" + to_string(kernel_size_h);
+            p_line.params += " 2=" + to_string(dilation_w);
+            p_line.params += " 12=" + to_string(dilation_h);
+            p_line.params += " 3=" + to_string(stride_w);
+            p_line.params += " 13=" + to_string(stride_h);
+            p_line.params += " 4=" + to_string(pad);
+            p_line.params += " 5=" + to_string(bias_term);
+            p_line.params += " 6=" + to_string(weight_data_size);
+        }
+        else if (node.op() == "Conv2DBackpropInput")
+        {
+            // weights
+            tensorflow::TensorProto tensor;
+            for (int j=0; j<node.input_size(); j++)
+            {
+                const std::string& input_name = node.input(j);
+                const std::map<std::string, tensorflow::TensorProto>::const_iterator it = weights.find(input_name);
+                if (it != weights.end())
+                {
+                    if((strstr(input_name.c_str(), "weights") != NULL)){
+                        tensor = it->second;
+                    }
+                }
+            }
+
+            const tensorflow::TensorShapeProto& shape = tensor.tensor_shape();
+
+            int kernel_size_h = shape.dim(0).size();
+            int kernel_size_w = shape.dim(1).size();
+            int num_output = shape.dim(2).size();
+            int num_input = shape.dim(3).size();
+
+            int stride_h = 1;
+            int stride_w = 1;
+            int dilation_h = 1;
+            int dilation_w = 1;
+            int pad = 0;
+
+            tensorflow::AttrValue value_strides;
+            if (find_attr_value(node, "strides", value_strides))
+            {
+                stride_h = value_strides.list().i(1);
+                stride_w = value_strides.list().i(2);
+            }
+
+            tensorflow::AttrValue value_padding;
+            if (find_attr_value(node, "padding", value_padding))
+            {
+                if (value_padding.s() == "VALID")
+                {
+                    pad = 0;
+                }
+                else if (value_padding.s() == "SAME")
+                {
+                    pad = -233;
+                }
+            }
+
+            tensorflow::AttrValue value_rate;
+            if (find_attr_value(node, "rate", value_rate))
+            {
+                dilation_h = value_rate.list().i(0);
+                dilation_w = value_rate.list().i(1);
+            }
+
+            int bias_term = 0;
+            int weight_data_size = 0;
+
+            // reorder h-w-i-o to o-i-h-w
+            if (!tensor.tensor_content().empty())
+            {
+                int quantize_tag = 0;
+                fwrite(&quantize_tag, sizeof(int), 1, bp);
+
+                if (tensor.dtype() == 1)// float
+                {
+                    const float* data = reinterpret_cast<const float*>(tensor.tensor_content().c_str());
+                    weight_data_size = tensor.tensor_content().size() / sizeof(float);
+
+                    float tmp;
+                    for (int p=0; p<num_output; p++)
+                    {
+                        for (int q=0; q<num_input; q++)
+                        {
+                            for (int i=0; i<kernel_size_h; i++)
+                            {
+                                for (int j=0; j<kernel_size_w; j++)
+                                {
+                                    tmp = data[i*kernel_size_w*num_input*num_output + j*num_input*num_output + p*num_input + q];//[h,w,in_channels, out_channels]
+                                    fwrite(&tmp, sizeof(float), 1, bp);
+                                }
+                            }
+                        }
+                    }
+                }
+                else if (tensor.dtype() == 3)// int32
+                {
+                    const int* data = reinterpret_cast<const int*>(tensor.tensor_content().c_str());
+                    weight_data_size = tensor.tensor_content().size() / sizeof(int);
+
+                    float tmp;
+                    for (int p=0; p<num_output; p++)
+                    {
+                        for (int q=0; q<num_input; q++)
+                        {
+                            for (int i=0; i<kernel_size_h; i++)
+                            {
+                                for (int j=0; j<kernel_size_w; j++)
+                                {
+                                    tmp = data[i*kernel_size_w*num_input*num_output + j*num_input*num_output + p*num_input + q];
+                                    fwrite(&tmp, sizeof(float), 1, bp);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            int bias_index = findNextBiasAdd(i+1, graph, binaryop_consts, weights);
+            if(bias_index > 0){
+                const tensorflow::NodeDef& node_bias = graph.node(bias_index);
+                tensorflow::TensorProto tensor_bias;
+                std::string bias_input_name;
+                bool has_bias = false;
+                for (int bi=0; bi<node_bias.input_size(); bi++)
+                {
+                    const std::string& tmp = node_bias.input(bi);
+                    if(strstr(tmp.c_str(), "biases/read") != NULL){
+                        bias_input_name = tmp;
+                        const std::map<std::string, tensorflow::TensorProto>::const_iterator it = binaryop_consts.find(bias_input_name);
+                        if (it != binaryop_consts.end())
+                        {
+                            tensor_bias = it->second;
+                            has_bias = true;
+                        }
+                        break;
+                    }
+                }
+                if(has_bias){
+                    bias_term = 1;
+                    p_line.name = node_bias.name();
+                    write_biases(tensor_bias, bp);
+                }
+            }
+
+            p_line.kw = kernel_size_w;
+            p_line.kh = kernel_size_h;
+            p_line.sw = stride_w;
+            p_line.sh = stride_h;
+            p_line.params  = "0="+to_string(num_output);
+            p_line.params += " 1=" + to_string(kernel_size_w);
+            p_line.params += " 11=" + to_string(kernel_size_h);
+            p_line.params += " 2=" + to_string(dilation_w);
+            p_line.params += " 12=" + to_string(dilation_h);
+            p_line.params += " 3=" + to_string(stride_w);
+            p_line.params += " 13=" + to_string(stride_h);
+            p_line.params += " 4=" + to_string(pad);
+            p_line.params += " 5=" + to_string(bias_term);
+            p_line.params += " 6=" + to_string(weight_data_size);
+        }
+        else if (node.op() == "FusedBatchNorm")
+        {
+            //epsilon
+            float eps = 0.0f;
+            tensorflow::AttrValue value_eps;
+            if (find_attr_value(node, "epsilon", value_eps))
+            {
+                eps = value_eps.f();
+            }
+            //mean var beta
+            tensorflow::TensorProto tensor_gamma;
+            tensorflow::TensorProto tensor_mean;
+            tensorflow::TensorProto tensor_var;
+            tensorflow::TensorProto tensor_beta;
+            bool has_gamma = false;
+            bool has_beta = false;
+            for (int j=0; j<node.input_size(); j++)
+            {
+                const std::string& input_name = node.input(j);
+                const std::map<std::string, tensorflow::TensorProto>::const_iterator it = weights.find(input_name);
+                if (it != weights.end())
+                {
+                    if((strstr(input_name.c_str(), "beta") != NULL)){
+                        tensor_beta = it->second;
+                        has_beta = true;
+                    }
+                    if((strstr(input_name.c_str(), "moving_mean") != NULL)){
+                        tensor_mean = it->second;
+                    }
+                    if((strstr(input_name.c_str(), "moving_variance") != NULL)){
+                        tensor_var = it->second;
+                    }
+                    if((strstr(input_name.c_str(), "gamma") != NULL))
+                    {
+                        tensor_gamma = it->second;
+                        has_gamma = true;
+                    }
+                }
+            }
+            int mean_size = tensor_mean.tensor_shape().dim(0).size();
+
+            if(has_gamma){
+                if (tensor_gamma.dtype() == 1)// float
+                {
+                    const float* data = reinterpret_cast<const float*>(tensor_gamma.tensor_content().c_str());
+                    int size = tensor_gamma.tensor_content().size() / sizeof(float);
+                    float tmp;
+                    for (int p=0; p<size; p++)
+                    {
+                        tmp = data[p];
+                        fwrite(&tmp, sizeof(float), 1, bp);
+                    }
+                } else if(tensor_gamma.dtype() == 3){
+                    const int* data = reinterpret_cast<const int*>(tensor_gamma.tensor_content().c_str());
+                    int size = tensor_gamma.tensor_content().size() / sizeof(int);
+                    float tmp;
+                    for (int p=0; p<size; p++)
+                    {
+                        tmp = data[p];
+                        fwrite(&tmp, sizeof(float), 1, bp);
+                    }
+                }
+            } else{
+                std::vector<float> ones(mean_size, 1.f);
+                fwrite(ones.data(), sizeof(float), ones.size(), bp);// default gamma 1.0
+            }
+      
+            if (tensor_mean.dtype() == 1)// float
+            {
+                const float* data = reinterpret_cast<const float*>(tensor_mean.tensor_content().c_str());
+                int size = tensor_mean.tensor_content().size() / sizeof(float);
+                float tmp;
+                for (int p=0; p<size; p++)
+                {
+                    tmp = data[p];
+                    fwrite(&tmp, sizeof(float), 1, bp);
+                }
+            } else if(tensor_mean.dtype() == 3){// int32
+                const int* data = reinterpret_cast<const int*>(tensor_mean.tensor_content().c_str());
+                int size = tensor_mean.tensor_content().size() / sizeof(int);
+                float tmp;
+                for (int p=0; p<size; p++)
+                {
+                    tmp = data[p];
+                    fwrite(&tmp, sizeof(float), 1, bp);
+                }
+            }
+            if (tensor_var.dtype() == 1)// float
+            {
+                const float* data = reinterpret_cast<const float*>(tensor_var.tensor_content().c_str());
+                int size = tensor_var.tensor_content().size() / sizeof(float);
+                float tmp;
+                for (int p=0; p<size; p++)
+                {
+                    tmp = data[p]+eps;
+                    fwrite(&tmp, sizeof(float), 1, bp);
+                }
+            } else if(tensor_var.dtype() == 3){// int32
+                const int* data = reinterpret_cast<const int*>(tensor_var.tensor_content().c_str());
+                int size = tensor_var.tensor_content().size() / sizeof(int);
+                float tmp;
+                for (int p=0; p<size; p++)
+                {
+                    tmp = data[p]+eps;
+                    fwrite(&tmp, sizeof(float), 1, bp);
+                }
+            }
+            if(has_beta){
+                if (tensor_beta.dtype() == 1)// float
+                {
+                    const float* data = reinterpret_cast<const float*>(tensor_beta.tensor_content().c_str());
+                    int size = tensor_beta.tensor_content().size() / sizeof(float);
+                    float tmp;
+                    for (int p=0; p<size; p++)
+                    {
+                        tmp = data[p];
+                        fwrite(&tmp, sizeof(float), 1, bp);
+                    }
+                } else if(tensor_beta.dtype() == 3){// int32
+                    const int* data = reinterpret_cast<const int*>(tensor_beta.tensor_content().c_str());
+                    int size = tensor_beta.tensor_content().size() / sizeof(int);
+                    float tmp;
+                    for (int p=0; p<size; p++)
+                    {
+                        tmp = data[p];
+                        fwrite(&tmp, sizeof(float), 1, bp);
+                    }
+                }
+            } else {
+                std::vector<float> zeros(mean_size, 0.f);
+                fwrite(zeros.data(), sizeof(float), zeros.size(), bp);// // default beta 0.0
+            }
+
+            p_line.params  = "0="+to_string(mean_size);
         }
         else if (node.op() == "DepthwiseConv2dNative")
         {
@@ -901,27 +1372,58 @@ int main(int argc, char** argv)
                 }
             }
 
-            fprintf(pp, " 0=%d", num_output);
-            fprintf(pp, " 1=%d", kernel_size_w);
-            fprintf(pp, " 11=%d", kernel_size_h);
-            fprintf(pp, " 2=%d", dilation_w);
-            fprintf(pp, " 12=%d", dilation_h);
-            fprintf(pp, " 3=%d", stride_w);
-            fprintf(pp, " 13=%d", stride_h);
-            fprintf(pp, " 4=%d", pad);
-            fprintf(pp, " 5=%d", bias_term);
-            fprintf(pp, " 6=%d", weight_data_size);
-            fprintf(pp, " 7=%d", group);
+            int bias_index = findNextBiasAdd(i+1, graph, binaryop_consts, weights);
+            if(bias_index > 0){
+                const tensorflow::NodeDef& node_bias = graph.node(bias_index);
+                tensorflow::TensorProto tensor_bias;
+                std::string bias_input_name;
+                bool has_bias = false;
+                for (int bi=0; bi<node_bias.input_size(); bi++)
+                {
+                    const std::string& tmp = node_bias.input(bi);
+                    if(strstr(tmp.c_str(), "biases/read") != NULL){
+                        bias_input_name = tmp;
+                        const std::map<std::string, tensorflow::TensorProto>::const_iterator it = binaryop_consts.find(bias_input_name);
+                        if (it != binaryop_consts.end())
+                        {
+                            tensor_bias = it->second;
+                            has_bias = true;
+                        }
+                        break;
+                    }
+                }
+                if(has_bias){
+                    bias_term = 1;
+                    p_line.name = node_bias.name();
+                    write_biases(tensor_bias, bp);
+                }
+            }
+
+            p_line.kw = kernel_size_w;
+            p_line.kh = kernel_size_h;
+            p_line.sw = stride_w;
+            p_line.sh = stride_h;
+            p_line.params  = "0="+to_string(num_output);
+            p_line.params += " 1=" + to_string(kernel_size_w);
+            p_line.params += " 11=" + to_string(kernel_size_h);
+            p_line.params += " 2=" + to_string(dilation_w);
+            p_line.params += " 12=" + to_string(dilation_h);
+            p_line.params += " 3=" + to_string(stride_w);
+            p_line.params += " 13=" + to_string(stride_h);
+            p_line.params += " 4=" + to_string(pad);
+            p_line.params += " 5=" + to_string(bias_term);
+            p_line.params += " 6=" + to_string(weight_data_size);
+            p_line.params += " 7=" + to_string(group);
         }
         else if (node.op() == "Div" || node.op() == "RealDiv")
         {
             int op_type = 3;
-            fprintf(pp, " 0=%d", op_type);
+            p_line.params += "0=" + to_string(op_type);
         }
         else if (node.op() == "Exp")
         {
             int op_type = 7;
-            fprintf(pp, " 0=%d", op_type);
+            p_line.params += "0=" + to_string(op_type);
         }
         else if (node.op() == "ExpandDims")
         {
@@ -941,14 +1443,14 @@ int main(int argc, char** argv)
                     expand_c = 1;
             }
 
-            fprintf(pp, " 0=%d", expand_w);
-            fprintf(pp, " 1=%d", expand_h);
-            fprintf(pp, " 2=%d", expand_c);
+            p_line.params  = "0="+to_string(expand_w);
+            p_line.params += " 1=" + to_string(expand_h);
+            p_line.params += " 2=" + to_string(expand_c);
         }
         else if (node.op() == "Floor")
         {
             int op_type = 2;
-            fprintf(pp, " 0=%d", op_type);
+            p_line.params += "0=" + to_string(op_type);
         }
         else if (node.op() == "LRN")
         {
@@ -983,10 +1485,10 @@ int main(int argc, char** argv)
                 bias = value_bias.f();
             }
 
-            fprintf(pp, " 0=%d", norm_region);
-            fprintf(pp, " 1=%d", local_size);
-            fprintf(pp, " 2=%f", alpha);
-            fprintf(pp, " 3=%f", beta);
+            p_line.params  = "0="+to_string(norm_region);
+            p_line.params += " 1=" + to_string(local_size);
+            p_line.params += " 2=" + to_string(alpha);
+            p_line.params += " 3=" + to_string(beta);
         }
         else if (node.op() == "MatMul")
         {
@@ -1040,9 +1542,9 @@ int main(int argc, char** argv)
                 }
             }
 
-            fprintf(pp, " 0=%d", num_output);
-            fprintf(pp, " 1=%d", bias_term);
-            fprintf(pp, " 2=%d", weight_data_size);
+            p_line.params  = "0="+to_string(num_output);
+            p_line.params += " 1=" + to_string(bias_term);
+            p_line.params += " 2=" + to_string(weight_data_size);
         }
         else if (node.op() == "Max" || node.op() == "Maximum")
         {
@@ -1056,14 +1558,14 @@ int main(int argc, char** argv)
 
                 dim = parse_tensor_reduction_dim(tensor);
 
-                fprintf(pp, " 0=%d", operation);
-                fprintf(pp, " 1=%d", dim);
-                fprintf(pp, " 2=%f", coeff);
+                p_line.params  = "0="+to_string(operation);
+                p_line.params += " 1=" + to_string(dim);
+                p_line.params += " 2=" + to_string(coeff);
             }
             else
             {
                 int op_type = 4;
-                fprintf(pp, " 0=%d", op_type);
+                p_line.params  = "0="+to_string(op_type);
             }
         }
         else if (node.op() == "MaxPool")
@@ -1108,14 +1610,14 @@ int main(int argc, char** argv)
                 }
             }
 
-            fprintf(pp, " 0=%d", pooling_type);
-            fprintf(pp, " 1=%d", kernel_size_w);
-            fprintf(pp, " 11=%d", kernel_size_h);
-            fprintf(pp, " 2=%d", stride_w);
-            fprintf(pp, " 12=%d", stride_h);
-            fprintf(pp, " 3=%d", pad);
-            fprintf(pp, " 4=%d", global_pooling);
-            fprintf(pp, " 5=%d", pad_mode);
+            p_line.params  = "0="+to_string(pooling_type);
+            p_line.params += " 1=" + to_string(kernel_size_w);
+            p_line.params += " 11=" + to_string(kernel_size_h);
+            p_line.params += " 2=" + to_string(stride_w);
+            p_line.params += " 12=" + to_string(stride_h);
+            p_line.params += " 3=" + to_string(pad);
+            p_line.params += " 4=" + to_string(global_pooling);
+            p_line.params += " 5=" + to_string(pad_mode);
         }
         else if (node.op() == "Min" || node.op() == "Minimum")
         {
@@ -1129,25 +1631,25 @@ int main(int argc, char** argv)
 
                 dim = parse_tensor_reduction_dim(tensor);
 
-                fprintf(pp, " 0=%d", operation);
-                fprintf(pp, " 1=%d", dim);
-                fprintf(pp, " 2=%f", coeff);
+                p_line.params  = "0="+to_string(operation);
+                p_line.params += " 1=" + to_string(dim);
+                p_line.params += " 2=" + to_string(coeff);
             }
             else
             {
                 int op_type = 5;
-                fprintf(pp, " 0=%d", op_type);
+                p_line.params  = "0="+to_string(op_type);
             }
         }
         else if (node.op() == "Mul")
         {
             int op_type = 2;
-            fprintf(pp, " 0=%d", op_type);
+            p_line.params  = "0="+to_string(op_type);
         }
         else if (node.op() == "Neg")
         {
             int op_type = 1;
-            fprintf(pp, " 0=%d", op_type);
+            p_line.params  = "0="+to_string(op_type);
         }
         else if (node.op() == "NoOp")
         {
@@ -1193,17 +1695,29 @@ int main(int argc, char** argv)
                 value = value_T.f();
             }
 
-            fprintf(pp, " 0=%d", top);
-            fprintf(pp, " 1=%d", bottom);
-            fprintf(pp, " 2=%d", left);
-            fprintf(pp, " 3=%d", right);
-            fprintf(pp, " 4=%d", type);
-            fprintf(pp, " 5=%f", value);
+            p_line.params  = "0="+to_string(top);
+            p_line.params += " 1=" + to_string(bottom);
+            p_line.params += " 2=" + to_string(left);
+            p_line.params += " 3=" + to_string(right);
+            p_line.params += " 4=" + to_string(type);
+            p_line.params += " 5=" + to_string(value);
         }
         else if (node.op() == "Placeholder")
         {
-            // TODO pass through
-            fprintf(pp, " 0=0 1=0 2=0");
+            int w = 0;
+            int h = 0;
+            int c = 0;
+            tensorflow::AttrValue value;
+            if (find_attr_value(node, "shape", value))
+            {
+                h = value.shape().dim(1).size();
+                w = value.shape().dim(2).size();
+                c = value.shape().dim(3).size();
+            }
+
+            p_line.params  = "0="+to_string(w);
+            p_line.params += " 1=" + to_string(h);
+            p_line.params += " 2=" + to_string(c);
         }
         else if (node.op() == "Prod")
         {
@@ -1218,19 +1732,19 @@ int main(int argc, char** argv)
                 dim = parse_tensor_reduction_dim(tensor);
             }
 
-            fprintf(pp, " 0=%d", operation);
-            fprintf(pp, " 1=%d", dim);
-            fprintf(pp, " 2=%f", coeff);
+            p_line.params  = "0="+to_string(operation);
+            p_line.params += " 1=" + to_string(dim);
+            p_line.params += " 2=" + to_string(coeff);
         }
         else if (node.op() == "Reciprocal")
         {
             int op_type = 15;
-            fprintf(pp, " 0=%d", op_type);
+            p_line.params  = "0="+to_string(op_type);
         }
         else if (node.op() == "Relu")
         {
             float slope = 0.f;
-            fprintf(pp, " 0=%f", slope);
+            p_line.params  = "0="+to_string(slope);
         }
         else if (node.op() == "Reshape")
         {
@@ -1247,28 +1761,37 @@ int main(int argc, char** argv)
                     // n w
                     if (size == 4)
                     {
-                        fprintf(pp, " 0=%d 1=%d 2=%d 3=0", data[2], data[1], data[3]);
+                        p_line.params  = "0="+to_string(data[2]);
+                        p_line.params  = " 1="+to_string(data[1]);
+                        p_line.params  = " 2="+to_string(data[3]);
+                        p_line.params  = " 3=0";
                     }
                     if (size == 3)
                     {
-                        fprintf(pp, " 0=%d 1=%d 2=-233 3=1", data[2], data[1]);
+                        p_line.params  = "0="+to_string(data[2]);
+                        p_line.params  = " 1="+to_string(data[1]);
+                        p_line.params  = " 2=-233";
+                        p_line.params  = " 3=1";
                     }
                     if (size == 2)
                     {
-                        fprintf(pp, " 0=%d 1=-233 2=-233 3=1", data[1]);
+                        p_line.params  = "0="+to_string(data[1]);
+                        p_line.params  = " 1=-233";
+                        p_line.params  = " 2=-233";
+                        p_line.params  = " 3=1";
                     }
                 }
             }
             else
             {
                 // pass through
-                fprintf(pp, " 0=0 1=0 2=0 3=0");
+                p_line.params  = "0=0 1=0 2=0 3=0";
             }
         }
         else if (node.op() == "Rsqrt")
         {
             int op_type = 6;
-            fprintf(pp, " 0=%d", op_type);
+            p_line.params  = "0="+to_string(op_type);
         }
         else if (node.op() == "Sigmoid")
         {
@@ -1279,7 +1802,7 @@ int main(int argc, char** argv)
         else if (node.op() == "Square")
         {
             int op_type = 4;
-            fprintf(pp, " 0=%d", op_type);
+            p_line.params  = "0="+to_string(op_type);
         }
         else if (node.op() == "Squeeze")
         {
@@ -1302,14 +1825,14 @@ int main(int argc, char** argv)
                 }
             }
 
-            fprintf(pp, " 0=%d", squeeze_w);
-            fprintf(pp, " 1=%d", squeeze_h);
-            fprintf(pp, " 2=%d", squeeze_c);
+            p_line.params  = "0="+to_string(squeeze_w);
+            p_line.params += " 1=" + to_string(squeeze_h);
+            p_line.params += " 2=" + to_string(squeeze_c);
         }
         else if (node.op() == "Sub")
         {
             int op_type = 1;
-            fprintf(pp, " 0=%d", op_type);
+            p_line.params  = "0="+to_string(op_type);
         }
         else if (node.op() == "Sum")
         {
@@ -1324,9 +1847,9 @@ int main(int argc, char** argv)
                 dim = parse_tensor_reduction_dim(tensor);
             }
 
-            fprintf(pp, " 0=%d", operation);
-            fprintf(pp, " 1=%d", dim);
-            fprintf(pp, " 2=%f", coeff);
+            p_line.params  = "0="+to_string(operation);
+            p_line.params += " 1=" + to_string(dim);
+            p_line.params += " 2=" + to_string(coeff);
         }
         else
         {
@@ -1339,32 +1862,121 @@ int main(int argc, char** argv)
             }
         }
 
-        fprintf(pp, "\n");
+        p_line.bottoms = p_line.name;
+        p_line.output_names.insert(p_line.name);
+        param_lines.push_back(p_line);
 
-        std::string output_name = node.name();
+        std::string output_name = p_line.name;
         if (node_reference.find(output_name) != node_reference.end())
         {
             int refcount = node_reference[output_name];
             if (refcount > 1)
             {
-                char splitname[256];
-                sprintf(splitname, "splitncnn_%d", internal_split);
-                fprintf(pp, "%-16s %-32s %d %d", "Split", splitname, 1, refcount);
-                fprintf(pp, " %s", output_name.c_str());
-
+                ParamLine p_line_split;
+                p_line_split.op = "Split";
+                p_line_split.name = "splitncnn_"+to_string(internal_split);
+                p_line_split.input_size = 1;
+                p_line_split.output_size = refcount;
+                p_line_split.tops = output_name;
+                p_line_split.input_names.insert(output_name);
                 for (int j=0; j<refcount; j++)
                 {
-                    fprintf(pp, " %s_splitncnn_%d", output_name.c_str(), j);
+                    if(j == 0){
+                        p_line_split.bottoms += output_name+"_splitncnn_"+to_string(j);
+                    } else {
+                        p_line_split.bottoms += " " + output_name+"_splitncnn_"+to_string(j);
+                    }
+                    p_line_split.output_names.insert(output_name+"_splitncnn_"+to_string(j));
                 }
-                fprintf(pp, "\n");
-
+                param_lines.push_back(p_line_split);
                 internal_split++;
             }
         }
     }
 
+    vector<ParamLine> param_lines_merged;//op merge
+    for(int i=0; i<param_lines.size(); i++){
+        ParamLine p = param_lines[i];
+        //only support conv 1x1s1 1x1s2 3x3s1 3x3s2
+        string flag = p.op+"_"+to_string(p.kw)+"_"+to_string(p.kh)+"_"+to_string(p.sw)+"_"+to_string(p.sh);
+        if(flag == "Convolution_1_1_1_1"
+            || flag == "Convolution_1_1_2_2"
+            || flag == "Convolution_3_3_1_1"
+            || flag == "Convolution_3_3_2_2"
+            || flag == "ConvolutionDepthWise_1_1_1_1"
+            || flag == "ConvolutionDepthWise_1_1_2_2"
+            || flag == "ConvolutionDepthWise_3_3_1_1"
+            || flag == "ConvolutionDepthWise_3_3_2_2"){
+            if(i+1<param_lines.size()){
+                ParamLine next = param_lines[i+1];
+                if(next.op == "BatchNorm"){
+                    bool hasRelu = false;
+                    if(i+2<param_lines.size()) {
+                        ParamLine next_next = param_lines[i + 2];
+                        if(next_next.op == "ReLU"){
+                            p.op = p.op+"BNRelu";
+                            p.name = next_next.name;
+                            p.bottoms = next_next.bottoms;
+                            p.output_names = next_next.output_names;
+                            i = i+2;
+                            hasRelu = true;
+                        }
+                    }
+//                    if(!hasRelu){
+//                        p.op = p.op+"BN";
+//                        p.name = next.name;
+//                        p.bottoms = next.bottoms;
+//                        p.output_names = next.output_names;
+//                        i = i+1;
+//                    }
+                } else if(next.op == "ReLU"){
+//                    p.op = p.op+"Relu";
+//                    p.name = next.name;
+//                    p.bottoms = next.bottoms;
+//                    p.output_names = next.output_names;
+//                    i = i+1;
+                }
+            }
+        }
+        param_lines_merged.push_back(p);
+    }
+
+    std::set<std::string> blob_names;
+    for(int i=0; i<param_lines_merged.size(); i++) {
+        ParamLine p = param_lines_merged[i];
+        for (set<string>::iterator it = p.input_names.begin(); it != p.input_names.end(); ++it)
+        {
+            blob_names.insert(*it);
+        }
+        for (set<string>::iterator it = p.output_names.begin(); it != p.output_names.end(); ++it)
+        {
+            blob_names.insert(*it);
+        }
+    }
+    fprintf(pp, "%lu %lu\n", param_lines_merged.size(), blob_names.size());
+
+    for(int i=0; i<param_lines_merged.size(); i++){
+        ParamLine p = param_lines_merged[i];
+        fprintf(pp, "%-28s", p.op.c_str());
+        fprintf(pp, " %-32s", p.name.c_str());
+        fprintf(pp, " %d", p.input_size);
+        fprintf(pp, " %d", p.output_size);
+        if(!p.tops.empty()){
+            fprintf(pp, " %s", p.tops.c_str());
+        }
+        if(!p.bottoms.empty()) {
+            fprintf(pp, " %s", p.bottoms.c_str());
+        }
+        if(!p.params.empty()) {
+            fprintf(pp, " %s", p.params.c_str());
+        }
+        fprintf(pp, "\n");
+    }
+
     fclose(pp);
     fclose(bp);
+
+    printf("done\n");
 
     return 0;
 }

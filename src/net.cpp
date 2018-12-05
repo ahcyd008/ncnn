@@ -31,6 +31,12 @@
 
 namespace ncnn {
 
+double now_ms() {
+    struct timespec res;
+    clock_gettime(CLOCK_REALTIME, &res);
+    return 1000.0 * res.tv_sec + (double) res.tv_nsec / 1e6;
+}
+
 Net::Net()
 {
     use_winograd_convolution = 1;
@@ -861,10 +867,10 @@ int Net::forward_layer(int layer_index, std::vector<Mat>& blob_mats, Option& opt
             double end = get_current_time();
             benchmark(layer, bottom_top_blob, bottom_top_blob, start, end);
 #else
-            clock_t st = clock();
+            double st = now_ms();
             int ret = layer->forward_inplace(bottom_top_blob, opt);
             char log[128]={0};
-            sprintf(log, "cost %.3f ms, forward_layer %d %s %s\n", double(clock() - st)*1000/CLOCKS_PER_SEC, layer_index, layer->name.c_str(), layer->type.c_str());
+            sprintf(log, "cost %.2f ms, forward_layer %d %s %s\n", now_ms()-st, layer_index, layer->name.c_str(), layer->type.c_str());
             logs.push_back(log);
 #endif // NCNN_BENCHMARK
             if (ret != 0)
@@ -882,10 +888,10 @@ int Net::forward_layer(int layer_index, std::vector<Mat>& blob_mats, Option& opt
             double end = get_current_time();
             benchmark(layer, bottom_blob, top_blob, start, end);
 #else
-            clock_t st = clock();
+            double st = now_ms();
             int ret = layer->forward(bottom_blob, top_blob, opt);
             char log[128]={0};
-            sprintf(log, "cost %.3f ms, forward_layer %d %s %s\n", double(clock() - st)*1000/CLOCKS_PER_SEC, layer_index, layer->name.c_str(), layer->type.c_str());
+            sprintf(log, "cost %.2f ms, forward_layer %d %s %s\n", now_ms()-st, layer_index, layer->name.c_str(), layer->type.c_str());
             logs.push_back(log);
 #endif // NCNN_BENCHMARK
             if (ret != 0)
@@ -936,10 +942,10 @@ int Net::forward_layer(int layer_index, std::vector<Mat>& blob_mats, Option& opt
             double end = get_current_time();
             benchmark(layer, start, end);
 #else
-            clock_t st = clock();
+            double st = now_ms();
             int ret = layer->forward_inplace(bottom_top_blobs, opt);
             char log[128]={0};
-            sprintf(log, "cost %.3f ms, forward_layer %d %s %s\n", double(clock() - st)*1000/CLOCKS_PER_SEC, layer_index, layer->name.c_str(), layer->type.c_str());
+            sprintf(log, "cost %.2f ms, forward_layer %d %s %s\n", now_ms()-st, layer_index, layer->name.c_str(), layer->type.c_str());
             logs.push_back(log);
 #endif // NCNN_BENCHMARK
             if (ret != 0)
@@ -963,10 +969,10 @@ int Net::forward_layer(int layer_index, std::vector<Mat>& blob_mats, Option& opt
             double end = get_current_time();
             benchmark(layer, start, end);
 #else
-            clock_t st = clock();
+            double st = now_ms();
             int ret = layer->forward(bottom_blobs, top_blobs, opt);
             char log[128]={0};
-            sprintf(log, "cost %.3f ms, forward_layer %d %s %s\n", double(clock() - st)*1000/CLOCKS_PER_SEC, layer_index, layer->name.c_str(), layer->type.c_str());
+            sprintf(log, "cost %.2f ms, forward_layer %d %s %s\n", now_ms() - st, layer_index, layer->name.c_str(), layer->type.c_str());
             logs.push_back(log);
 #endif // NCNN_BENCHMARK
             if (ret != 0)
@@ -1035,7 +1041,7 @@ int Extractor::extract(int blob_index, Mat& feat)
 
     logs.clear();
     logs.push_back("begin---------------------");
-    clock_t st = clock();
+    double st = now_ms();
     if (blob_mats[blob_index].dims == 0)
     {
         int layer_index = net->blobs[blob_index].producer;
@@ -1045,7 +1051,7 @@ int Extractor::extract(int blob_index, Mat& feat)
     feat = blob_mats[blob_index];
 
     char log[128]={0};
-    sprintf(log, "total cost %.3f ms\n", double(clock() - st)*1000/CLOCKS_PER_SEC);
+    sprintf(log, "total cost %.2f ms\n", now_ms() - st);
     logs.push_back(log);
     logs.push_back("end------------------------");
     return ret;
@@ -1073,7 +1079,7 @@ int Extractor::extract(const char* blob_name, Mat& feat)
 
     logs.clear();
     logs.push_back("------------------begin---------------------\n");
-    clock_t st = clock();
+    double st = now_ms();
     if (blob_mats[blob_index].dims == 0)
     {
         int layer_index = net->blobs[blob_index].producer;
@@ -1082,7 +1088,7 @@ int Extractor::extract(const char* blob_name, Mat& feat)
 
     feat = blob_mats[blob_index];
     char log[128]={0};
-    sprintf(log, "total cost %.3f ms  lightmode=%d num_threads=%d\n", double(clock() - st)*1000/CLOCKS_PER_SEC, opt.lightmode, opt.num_threads);
+    sprintf(log, "total cost %.2f ms  lightmode=%d num_threads=%d\n", now_ms() - st, opt.lightmode, opt.num_threads);
     logs.push_back(log);
     logs.push_back("-------------------end------------------------\n");
 

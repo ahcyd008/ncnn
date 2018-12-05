@@ -28,34 +28,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d13ff6ee-de61-47e0-8c78-9a3e849ad2fb" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/examples/hed.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/layer/arm/convolutionbnrelu_1x1.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/layer/arm/convolutionbnrelu_3x3.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/layer/arm/convolutionbnrelu_arm.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/layer/arm/convolutionbnrelu_arm.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/layer/arm/convolutiondepthwisebnrelu_3x3.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/layer/arm/convolutiondepthwisebnrelu_arm.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/layer/arm/convolutiondepthwisebnrelu_arm.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/layer/convolutionbnrelu.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/layer/convolutionbnrelu.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/layer/convolutiondepthwisebnrelu.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/layer/convolutiondepthwisebnrelu.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/layer/x86/convolutionbnrelu_1x1.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/layer/x86/convolutionbnrelu_3x3.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/layer/x86/convolutionbnrelu_x86.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/layer/x86/convolutionbnrelu_x86.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/layer/x86/convolutiondepthwisebnrelu_3x3.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/layer/x86/convolutiondepthwisebnrelu_x86.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/layer/x86/convolutiondepthwisebnrelu_x86.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tools/tensorflow/tensorflow2ncnn.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/examples/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/layer/arm/deconvolution_arm.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/layer/arm/deconvolution_arm.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/layer/deconvolution.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/layer/deconvolution.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/net.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/net.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/net.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/net.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tools/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/tools/CMakeLists.txt" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -97,7 +71,7 @@
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="cpp" value="602" />
+          <entry key="cpp" value="605" />
           <entry key="h" value="8" />
           <entry key="param" value="1" />
           <entry key="txt" value="12" />
@@ -106,7 +80,7 @@
       <usages-collector id="statistics.file.types.edit">
         <counts>
           <entry key="CMakeLists.txt" value="12" />
-          <entry key="ObjectiveC" value="610" />
+          <entry key="ObjectiveC" value="613" />
           <entry key="PLAIN_TEXT" value="1" />
         </counts>
       </usages-collector>
@@ -114,13 +88,13 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/net.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="654">
-              <caret line="2040" selection-start-line="2040" selection-end-line="2040" />
+            <state relative-caret-position="426">
+              <caret line="2287" column="44" lean-forward="true" selection-start-line="2287" selection-start-column="44" selection-end-line="2287" selection-end-column="44" />
               <folding>
-                <element signature="e#71125#72786#0" expanded="true" />
+                <element signature="e#30929#31162#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -178,11 +152,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/net.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="265">
-              <caret line="116" lean-forward="true" selection-start-line="116" selection-end-line="116" />
+            <state relative-caret-position="325">
+              <caret line="120" column="10" selection-start-line="120" selection-start-column="10" selection-end-line="120" selection-end-column="10" />
             </state>
           </provider>
         </entry>
@@ -191,8 +165,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>merge/conv3/BiasAdd_splitncnn_1</find>
-      <find>splitncnn_5</find>
       <find>merge/conv3/BiasAdd</find>
       <find>param_lines_merged.</find>
       <find>param_lines.size()</find>
@@ -221,6 +193,8 @@
       <find>findNextBiasAdd</find>
       <find>=====</find>
       <find>getlo</find>
+      <find>clock</find>
+      <find>st</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -233,9 +207,9 @@
         <option value="$PROJECT_DIR$/build/examples/hed-ncnn.param" />
         <option value="$PROJECT_DIR$/CMakeLists.txt" />
         <option value="$PROJECT_DIR$/tools/tensorflow/tensorflow2ncnn.cpp" />
-        <option value="$PROJECT_DIR$/src/net.cpp" />
         <option value="$PROJECT_DIR$/src/CMakeLists.txt" />
         <option value="$PROJECT_DIR$/src/net.h" />
+        <option value="$PROJECT_DIR$/src/net.cpp" />
       </list>
     </option>
   </component>
@@ -426,12 +400,12 @@
       <workItem from="1543997291442" duration="25682000" />
       <workItem from="1551972067188" duration="1836000" />
       <workItem from="1551975270971" duration="2381000" />
-      <workItem from="1556905604479" duration="1509000" />
+      <workItem from="1556905604479" duration="1923000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="42502000" />
+    <option name="totallyTimeSpent" value="42916000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="67" y="25" width="1849" height="903" extended-state="6" />
@@ -602,16 +576,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/net.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="654">
-          <caret line="2040" selection-start-line="2040" selection-end-line="2040" />
-          <folding>
-            <element signature="e#71125#72786#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/layer_type_enum.h.in">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
@@ -663,8 +627,18 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/net.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="265">
-          <caret line="116" lean-forward="true" selection-start-line="116" selection-end-line="116" />
+        <state relative-caret-position="325">
+          <caret line="120" column="10" selection-start-line="120" selection-start-column="10" selection-end-line="120" selection-end-column="10" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/net.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="426">
+          <caret line="2287" column="44" lean-forward="true" selection-start-line="2287" selection-start-column="44" selection-end-line="2287" selection-end-column="44" />
+          <folding>
+            <element signature="e#30929#31162#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

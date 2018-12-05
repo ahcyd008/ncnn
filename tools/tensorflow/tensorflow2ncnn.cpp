@@ -138,12 +138,15 @@ static int parse_tensor_reduction_dim(const tensorflow::TensorProto& tensor)
     return dim;
 }
 
+//merge biasAdd to Convolution Deconvolution ConvolutionDepthWise
 int findNextBiasAdd(int begin, tensorflow::GraphDef& graph, std::map<std::string, tensorflow::TensorProto>& binaryop_consts, std::map<std::string, tensorflow::TensorProto>& weights)
 {
     int node_count = graph.node_size();
-    for (int i=begin; i<node_count; i++) {
+    for (int i=begin; i<node_count; i++)
+    {
         const tensorflow::NodeDef &node = graph.node(i);
-        if(node.op() == "Identity" || node.op() == "Const"){
+        if(node.op() == "Identity" || node.op() == "Const")
+        {
             if (binaryop_consts.find(node.name()) != binaryop_consts.end())
             {
                 continue;
@@ -153,12 +156,39 @@ int findNextBiasAdd(int begin, tensorflow::GraphDef& graph, std::map<std::string
                 continue;
             }
         }
-        if(node.op() == "BiasAdd" && (strstr(node.name().c_str(), "conv") != NULL)){
+        if(node.op() == "BiasAdd")
+        {
             return i;
         }
         break;
     }
     return -1;
+}
+
+//merge biasAdd to Convolution Deconvolution ConvolutionDepthWise
+bool wouldBeMergedBiasAdd(std::string node_name, int begin, tensorflow::GraphDef& graph)
+{
+    int node_count = graph.node_size();
+    for (int i=begin; i<node_count; i++)
+    {
+        const tensorflow::NodeDef &node = graph.node(i);
+        if(node.op() == "Conv2DBackpropInput" || node.op() == "Conv2D" || node.op() == "DepthwiseConv2dNative")
+        {
+            continue;
+        }
+        if(node.op() == "BiasAdd")
+        {
+            for (int bi=0; bi<node.input_size(); bi++)
+            {
+                const std::string &tmp = node.input(bi);
+                if(node_name == tmp){
+                    return true;
+                }
+            }
+        }
+        break;
+    }
+    return false;
 }
 
 void write_biases(tensorflow::TensorProto tensor, FILE* bp){
@@ -308,9 +338,6 @@ int main(int argc, char** argv)
     std::map<std::string, tensorflow::TensorProto> binaryop_consts;
 
     // global definition line
-    // [layer count] [blob count]
-    //out params
-    vector<ParamLine> param_lines;
 
     for (int i=0; i<node_count; i++)
     {
@@ -407,8 +434,6 @@ int main(int argc, char** argv)
         // fprintf(stderr, "output = %s\n", output_name.c_str());
     }
 
-    // remove node_reference entry with reference equals to one
-    int splitncnn_blob_count = 0;
     std::map<std::string, int>::iterator it = node_reference.begin();
     while (it != node_reference.end())
     {
@@ -418,13 +443,14 @@ int main(int argc, char** argv)
         }
         else
         {
-            splitncnn_blob_count += it->second;
-            // fprintf(stderr, "%s %d\n", it->first.c_str(), it->second);
             ++it;
         }
     }
 
     int internal_split = 0;
+    bool ignoreBiasAdd = false;
+    //out params
+    vector<ParamLine> param_lines;
 
     for (int i=0; i<node_count; i++)
     {
@@ -440,7 +466,8 @@ int main(int argc, char** argv)
             p_line.op = "BinaryOp";
         }
         else if(node.op() == "BiasAdd"){
-            if((strstr(node.name().c_str(), "conv") != NULL)){
+            if(ignoreBiasAdd){
+                ignoreBiasAdd = false;
                 continue;
             }
             p_line.op = "BinaryOp";
@@ -459,7 +486,8 @@ int main(int argc, char** argv)
             tensorflow::TensorProto tensor;
             if (get_tensor_proto(binaryop_consts, node, tensor))
             {
-                if((strstr(node.name().c_str(), "biases/read") != NULL) && (strstr(node.name().c_str(), "conv") != NULL)){
+                if((strstr(node.name().c_str(), "biases/read") != NULL)
+                        && (ignoreBiasAdd || wouldBeMergedBiasAdd(node.name(), i+1, graph))){
                     continue;
                 }
                 p_line.op = "MemoryData";
@@ -507,7 +535,8 @@ int main(int argc, char** argv)
             tensorflow::TensorProto tensor;
             if (get_tensor_proto(binaryop_consts, node, tensor))
             {
-                if((strstr(node.name().c_str(), "biases/read") != NULL) && (strstr(node.name().c_str(), "conv") != NULL)){
+                if((strstr(node.name().c_str(), "biases/read") != NULL)
+                        && (ignoreBiasAdd || wouldBeMergedBiasAdd(node.name(), i+1, graph))){
                     continue;
                 }
                 p_line.op = "MemoryData";
@@ -962,6 +991,7 @@ int main(int argc, char** argv)
                     }
                 }
                 if(has_bias){
+                    ignoreBiasAdd = true;
                     bias_term = 1;
                     p_line.name = node_bias.name();
                     write_biases(tensor_bias, bp);
@@ -1112,6 +1142,7 @@ int main(int argc, char** argv)
                     }
                 }
                 if(has_bias){
+                    ignoreBiasAdd = true;
                     bias_term = 1;
                     p_line.name = node_bias.name();
                     write_biases(tensor_bias, bp);
@@ -1393,6 +1424,7 @@ int main(int argc, char** argv)
                     }
                 }
                 if(has_bias){
+                    ignoreBiasAdd = true;
                     bias_term = 1;
                     p_line.name = node_bias.name();
                     write_biases(tensor_bias, bp);
@@ -1895,7 +1927,7 @@ int main(int argc, char** argv)
     }
 
     vector<ParamLine> param_lines_merged;//op merge
-    for(int i=0; i<param_lines.size(); i++){
+    for(size_t i=0; i<param_lines.size(); i++){
         ParamLine p = param_lines[i];
         //only support conv 1x1s1 1x1s2 3x3s1 3x3s2
         string flag = p.op+"_"+to_string(p.kw)+"_"+to_string(p.kh)+"_"+to_string(p.sw)+"_"+to_string(p.sh);
@@ -1920,6 +1952,7 @@ int main(int argc, char** argv)
                             p.output_names = next_next.output_names;
                             i = i+2;
                             hasRelu = true;
+                            //printf("merge %s   %s\n", p.name.c_str(), p.op.c_str());
                         }
                     }
 //                    if(!hasRelu){
@@ -1942,7 +1975,7 @@ int main(int argc, char** argv)
     }
 
     std::set<std::string> blob_names;
-    for(int i=0; i<param_lines_merged.size(); i++) {
+    for(size_t i=0; i<param_lines_merged.size(); i++) {
         ParamLine p = param_lines_merged[i];
         for (set<string>::iterator it = p.input_names.begin(); it != p.input_names.end(); ++it)
         {
@@ -1955,7 +1988,7 @@ int main(int argc, char** argv)
     }
     fprintf(pp, "%lu %lu\n", param_lines_merged.size(), blob_names.size());
 
-    for(int i=0; i<param_lines_merged.size(); i++){
+    for(size_t i=0; i<param_lines_merged.size(); i++){
         ParamLine p = param_lines_merged[i];
         fprintf(pp, "%-28s", p.op.c_str());
         fprintf(pp, " %-32s", p.name.c_str());

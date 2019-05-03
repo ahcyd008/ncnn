@@ -638,6 +638,7 @@ int Net::load_model(FILE* fp)
             break;
         }
 
+        printf("load model %s\n", layer->name.c_str());
         int lret = layer->load_model(mb);
         if (lret != 0)
         {
@@ -654,6 +655,7 @@ int Net::load_model(FILE* fp)
             break;
         }
     }
+    printf("load model end\n");
 
 #if NCNN_VULKAN
     if (opt.use_vulkan_compute)
@@ -1263,6 +1265,10 @@ Layer* Net::create_custom_layer(int index)
     return layer_creator();
 }
 
+std::vector<std::string> Net::get_logs(){
+    return logs;
+}
+
 int Net::forward_layer(int layer_index, std::vector<Mat>& blob_mats, Option& opt) const
 {
     const Layer* layer = layers[layer_index];
@@ -1305,7 +1311,11 @@ int Net::forward_layer(int layer_index, std::vector<Mat>& blob_mats, Option& opt
             double end = get_current_time();
             benchmark(layer, bottom_top_blob, bottom_top_blob, start, end);
 #else
+            clock_t st = clock();
             int ret = layer->forward_inplace(bottom_top_blob, opt);
+            char log[128]={0};
+            sprintf(log, "cost %.3f ms, forward_layer %d %s %s\n", double(clock() - st)*1000/CLOCKS_PER_SEC, layer_index, layer->name.c_str(), layer->type.c_str());
+            logs.push_back(log);
 #endif // NCNN_BENCHMARK
             if (ret != 0)
                 return ret;
@@ -1322,7 +1332,11 @@ int Net::forward_layer(int layer_index, std::vector<Mat>& blob_mats, Option& opt
             double end = get_current_time();
             benchmark(layer, bottom_blob, top_blob, start, end);
 #else
+            clock_t st = clock();
             int ret = layer->forward(bottom_blob, top_blob, opt);
+            char log[128]={0};
+            sprintf(log, "cost %.3f ms, forward_layer %d %s %s\n", double(clock() - st)*1000/CLOCKS_PER_SEC, layer_index, layer->name.c_str(), layer->type.c_str());
+            logs.push_back(log);
 #endif // NCNN_BENCHMARK
             if (ret != 0)
                 return ret;
@@ -1371,7 +1385,11 @@ int Net::forward_layer(int layer_index, std::vector<Mat>& blob_mats, Option& opt
             double end = get_current_time();
             benchmark(layer, start, end);
 #else
+            clock_t st = clock();
             int ret = layer->forward_inplace(bottom_top_blobs, opt);
+            char log[128]={0};
+            sprintf(log, "cost %.3f ms, forward_layer %d %s %s\n", double(clock() - st)*1000/CLOCKS_PER_SEC, layer_index, layer->name.c_str(), layer->type.c_str());
+            logs.push_back(log);
 #endif // NCNN_BENCHMARK
             if (ret != 0)
                 return ret;
@@ -1393,7 +1411,11 @@ int Net::forward_layer(int layer_index, std::vector<Mat>& blob_mats, Option& opt
             double end = get_current_time();
             benchmark(layer, start, end);
 #else
+            clock_t st = clock();
             int ret = layer->forward(bottom_blobs, top_blobs, opt);
+            char log[128]={0};
+            sprintf(log, "cost %.3f ms, forward_layer %d %s %s\n", double(clock() - st)*1000/CLOCKS_PER_SEC, layer_index, layer->name.c_str(), layer->type.c_str());
+            logs.push_back(log);
 #endif // NCNN_BENCHMARK
             if (ret != 0)
                 return ret;
@@ -2088,6 +2110,10 @@ int Extractor::extract(int blob_index, Mat& feat)
 
     int ret = 0;
 
+
+    logs.clear();
+    logs.push_back("begin---------------------");
+    clock_t st = clock();
     if (blob_mats[blob_index].dims == 0)
     {
         int layer_index = net->blobs[blob_index].producer;
@@ -2205,6 +2231,10 @@ int Extractor::extract(int blob_index, Mat& feat)
 
     feat = blob_mats[blob_index];
 
+    char log[128]={0};
+    sprintf(log, "total cost %.3f ms\n", double(clock() - st)*1000/CLOCKS_PER_SEC);
+    logs.push_back(log);
+    logs.push_back("end------------------------");
     return ret;
 }
 
@@ -2246,6 +2276,9 @@ int Extractor::extract(int blob_index, VkMat& feat, VkCompute& cmd)
 
     int ret = 0;
 
+    logs.clear();
+    logs.push_back("------------------begin---------------------\n");
+    clock_t st = clock();
     if (blob_mats_gpu[blob_index].dims == 0)
     {
         int layer_index = net->blobs[blob_index].producer;
@@ -2253,6 +2286,10 @@ int Extractor::extract(int blob_index, VkMat& feat, VkCompute& cmd)
     }
 
     feat = blob_mats_gpu[blob_index];
+    char log[128]={0};
+    sprintf(log, "total cost %.3f ms  lightmode=%d num_threads=%d\n", double(clock() - st)*1000/CLOCKS_PER_SEC, opt.lightmode, opt.num_threads);
+    logs.push_back(log);
+    logs.push_back("-------------------end------------------------\n");
 
     return ret;
 }

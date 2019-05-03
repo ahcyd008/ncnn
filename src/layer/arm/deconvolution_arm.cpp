@@ -136,7 +136,7 @@ int Deconvolution_arm::forward(const Mat& bottom_blob, Mat& top_blob, const Opti
     int outh = (h - 1) * stride + kernel_size;
 
     Mat top_blob_bordered;
-    if (pad_w > 0 || pad_h > 0)
+    if (pad_w > 0 || pad_h > 0 || (pad_w == -233 && pad_h == -233))//-233 for padding same
     {
         top_blob_bordered.create(outw, outh, num_output, elemsize, opt.workspace_allocator);
         if (top_blob_bordered.empty())
@@ -160,6 +160,22 @@ int Deconvolution_arm::forward(const Mat& bottom_blob, Mat& top_blob, const Opti
 
         outw = top_blob.w;
         outh = top_blob.h;
+    }
+    //support padding SAME of tensorflow
+    else if (pad_w == -233 && pad_h == -233)
+    {
+        int tw = w * stride;
+        int th = h * stride;
+
+        int wpad = outw-tw;
+        int hpad = outh-th;
+        if(wpad>0 || hpad >0){
+            copy_cut_border(top_blob_bordered, top_blob, hpad/2, hpad-hpad/2, wpad/2, wpad-wpad/2, opt.blob_allocator, opt.num_threads);
+            outw = top_blob.w;
+            outh = top_blob.h;
+        } else {
+            top_blob = top_blob_bordered;
+        }
     }
     else
     {

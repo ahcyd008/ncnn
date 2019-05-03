@@ -28,6 +28,9 @@ namespace ncnn {
 #if NCNN_VULKAN
 class VkCompute;
 #endif // NCNN_VULKAN
+    
+static std::vector<std::string> logs;
+
 class Extractor;
 class Net
 {
@@ -112,6 +115,10 @@ protected:
 
 #endif // NCNN_VULKAN
 
+public:
+    std::vector<std::string> get_logs();
+
+protected:
     friend class Extractor;
 #if NCNN_STRING
     int find_blob_index_by_name(const char* name) const;

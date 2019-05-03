@@ -34,6 +34,7 @@ add_executable(mobilenetssd mobilenetssd.cpp)
 target_link_libraries(mobilenetssd ${NCNN_EXAMPLE_LINK_LIBRARIES})
 
 add_executable(squeezenetssd squeezenetssd.cpp)
+
 target_link_libraries(squeezenetssd ${NCNN_EXAMPLE_LINK_LIBRARIES})
 
 add_executable(shufflenetv2 shufflenetv2.cpp)
@@ -41,3 +42,6 @@ target_link_libraries(shufflenetv2 ${NCNN_EXAMPLE_LINK_LIBRARIES})
 
 add_executable(peleenetssd_seg peleenetssd_seg.cpp)
 target_link_libraries(peleenetssd_seg ${NCNN_EXAMPLE_LINK_LIBRARIES})
+
+add_executable(hed hed.cpp)
+target_link_libraries(hed ncnn ${OpenCV_LIBS})

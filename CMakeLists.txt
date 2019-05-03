@@ -96,9 +96,10 @@ elseif(LINUX)
 endif()
 
 ##############################################
-
-# add_subdirectory(examples)
-add_subdirectory(benchmark)
+if(NOT ANDROID AND NOT IOS)
+    add_subdirectory(examples)
+endif()
+# add_subdirectory(benchmark)
 add_subdirectory(src)
 if(NOT ANDROID AND NOT IOS)
 add_subdirectory(tools)

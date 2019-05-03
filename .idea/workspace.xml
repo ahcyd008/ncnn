@@ -1,0 +1,672 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CMakeRunConfigurationManager" shouldGenerate="true" shouldDeleteObsolete="true" buildAllGenerated="true">
+    <generated>
+      <config projectName="ncnn" targetName="ncnn2mem" />
+      <config projectName="ncnn" targetName="yolov2" />
+      <config projectName="ncnn" targetName="yolov3" />
+      <config projectName="ncnn" targetName="squeezenet" />
+      <config projectName="ncnn" targetName="hed" />
+      <config projectName="ncnn" targetName="generate-spirv" />
+      <config projectName="ncnn" targetName="ncnn" />
+      <config projectName="ncnn" targetName="mobilenetv2ssdlite" />
+      <config projectName="ncnn" targetName="mobilenetssd" />
+      <config projectName="ncnn" targetName="squeezenetssd" />
+      <config projectName="ncnn" targetName="tensorflow2ncnn" />
+      <config projectName="ncnn" targetName="rfcn" />
+      <config projectName="ncnn" targetName="fasterrcnn" />
+      <config projectName="ncnn" targetName="caffe2ncnn" />
+      <config projectName="ncnn" targetName="shufflenetv2" />
+      <config projectName="ncnn" targetName="peleenetssd_seg" />
+      <config projectName="ncnn" targetName="ncnnoptimize" />
+    </generated>
+  </component>
+  <component name="CMakeSettings">
+    <configurations>
+      <configuration PROFILE_NAME="Debug" CONFIG_NAME="Debug" />
+    </configurations>
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="d13ff6ee-de61-47e0-8c78-9a3e849ad2fb" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/examples/hed.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/layer/arm/convolutionbnrelu_1x1.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/layer/arm/convolutionbnrelu_3x3.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/layer/arm/convolutionbnrelu_arm.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/layer/arm/convolutionbnrelu_arm.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/layer/arm/convolutiondepthwisebnrelu_3x3.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/layer/arm/convolutiondepthwisebnrelu_arm.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/layer/arm/convolutiondepthwisebnrelu_arm.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/layer/convolutionbnrelu.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/layer/convolutionbnrelu.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/layer/convolutiondepthwisebnrelu.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/layer/convolutiondepthwisebnrelu.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/layer/x86/convolutionbnrelu_1x1.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/layer/x86/convolutionbnrelu_3x3.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/layer/x86/convolutionbnrelu_x86.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/layer/x86/convolutionbnrelu_x86.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/layer/x86/convolutiondepthwisebnrelu_3x3.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/layer/x86/convolutiondepthwisebnrelu_x86.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/layer/x86/convolutiondepthwisebnrelu_x86.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tools/tensorflow/tensorflow2ncnn.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/examples/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/layer/arm/deconvolution_arm.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/layer/arm/deconvolution_arm.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/layer/deconvolution.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/layer/deconvolution.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/net.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/net.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/net.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/net.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tools/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/tools/CMakeLists.txt" afterDir="false" />
+    </list>
+    <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
+  <component name="FUSProjectUsageTrigger">
+    <session id="-888254109">
+      <usages-collector id="statistics.lifecycle.project">
+        <counts>
+          <entry key="project.closed" value="2" />
+          <entry key="project.open.time.0" value="1" />
+          <entry key="project.open.time.1" value="1" />
+          <entry key="project.open.time.13" value="1" />
+          <entry key="project.open.time.23" value="1" />
+          <entry key="project.open.time.31" value="1" />
+          <entry key="project.opened" value="6" />
+        </counts>
+      </usages-collector>
+      <usages-collector id="statistics.file.extensions.open">
+        <counts>
+          <entry key="cpp" value="22" />
+          <entry key="h" value="19" />
+          <entry key="in" value="4" />
+          <entry key="param" value="6" />
+          <entry key="txt" value="12" />
+        </counts>
+      </usages-collector>
+      <usages-collector id="statistics.file.types.open">
+        <counts>
+          <entry key="CMakeCache.txt" value="5" />
+          <entry key="CMakeLists.txt" value="7" />
+          <entry key="ObjectiveC" value="41" />
+          <entry key="PLAIN_TEXT" value="10" />
+        </counts>
+      </usages-collector>
+      <usages-collector id="statistics.file.extensions.edit">
+        <counts>
+          <entry key="cpp" value="602" />
+          <entry key="h" value="8" />
+          <entry key="param" value="1" />
+          <entry key="txt" value="12" />
+        </counts>
+      </usages-collector>
+      <usages-collector id="statistics.file.types.edit">
+        <counts>
+          <entry key="CMakeLists.txt" value="12" />
+          <entry key="ObjectiveC" value="610" />
+          <entry key="PLAIN_TEXT" value="1" />
+        </counts>
+      </usages-collector>
+    </session>
+  </component>
+  <component name="FileEditorManager">
+    <leaf>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/net.cpp">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="654">
+              <caret line="2040" selection-start-line="2040" selection-end-line="2040" />
+              <folding>
+                <element signature="e#71125#72786#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/layer.h">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="329">
+              <caret line="22" column="16" selection-start-line="22" selection-start-column="16" selection-end-line="22" selection-end-column="16" />
+              <folding>
+                <element signature="e#948#1017#0" expanded="true" />
+                <element signature="e#2513#3363#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/layer/convolutionbnrelu.h">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-487" />
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/layer/convolutionbnrelu.cpp">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="324">
+              <caret line="131" column="5" selection-start-line="131" selection-start-column="5" selection-end-line="131" selection-end-column="5" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/layer/convolution.h">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-352" />
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/layer/convolution.cpp">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-1035" />
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/CMakeLists.txt">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="213">
+              <caret line="230" column="21" selection-start-line="230" selection-start-column="21" selection-end-line="230" selection-end-column="21" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/net.h">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="265">
+              <caret line="116" lean-forward="true" selection-start-line="116" selection-end-line="116" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>merge/conv3/BiasAdd_splitncnn_1</find>
+      <find>splitncnn_5</find>
+      <find>merge/conv3/BiasAdd</find>
+      <find>param_lines_merged.</find>
+      <find>param_lines.size()</find>
+      <find>droped_op_names</find>
+      <find>merge/conv3/BiasAdd_splitncnn_3</find>
+      <find>BiasAdd</find>
+      <find>binaryop_consts</find>
+      <find>weights</find>
+      <find>merge/conv5/biases/read</find>
+      <find>wouldBeMergedBiasAdd</find>
+      <find>fusion/sigmoid_f/Sigmoid_splitncnn_0</find>
+      <find>sigmoid_f</find>
+      <find>BiasAdd_splitncnn_0</find>
+      <find>concat1_splitncnn_0</find>
+      <find>node_reference</find>
+      <find>splitncnn_blob_count</find>
+      <find>omp parallel</find>
+      <find>NCNN_STDIO</find>
+      <find>openmp</find>
+      <find>open</find>
+      <find>.name</find>
+      <find>layer-&gt;name</find>
+      <find>neon</find>
+      <find>NCNN_OPENMP</find>
+      <find>ignoreBiasAdd</find>
+      <find>findNextBiasAdd</find>
+      <find>=====</find>
+      <find>getlo</find>
+    </findStrings>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/src/cpu.cpp" />
+        <option value="$PROJECT_DIR$/build/examples/hed-ncnn.param" />
+        <option value="$PROJECT_DIR$/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/tools/tensorflow/tensorflow2ncnn.cpp" />
+        <option value="$PROJECT_DIR$/src/net.cpp" />
+        <option value="$PROJECT_DIR$/src/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/src/net.h" />
+      </list>
+    </option>
+  </component>
+  <component name="JsBuildToolGruntFileManager" detection-done="true" sorting="DEFINITION_ORDER" />
+  <component name="JsBuildToolPackageJson" detection-done="true" sorting="DEFINITION_ORDER" />
+  <component name="JsGulpfileManager">
+    <detection-done>true</detection-done>
+    <sorting>DEFINITION_ORDER</sorting>
+  </component>
+  <component name="OCFindUsagesOptions" text="true" ivars="false" properties="true" derivedClasses="false" />
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="x" value="67" />
+    <option name="y" value="27" />
+    <option name="width" value="1819" />
+    <option name="height" value="901" />
+  </component>
+  <component name="ProjectView">
+    <navigator proportions="" version="1">
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="Scope" />
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="ncnn" type="b2602c69:ProjectViewProjectNode" />
+              <item name="ncnn" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="ncnn" type="b2602c69:ProjectViewProjectNode" />
+              <item name="ncnn" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="ncnn" type="b2602c69:ProjectViewProjectNode" />
+              <item name="ncnn" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="layer" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="last_opened_file_path" value="$USER_HOME$/CLionProjects/detector-so" />
+    <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
+    <property name="nodejs_npm_path_reset_for_default_project" value="true" />
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="RunManager" selected="Application.Build All">
+    <configuration name="Build All" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" CONFIG_NAME="Debug" EXPLICIT_BUILD_TARGET_NAME="all">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="caffe2ncnn" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ncnn" TARGET_NAME="caffe2ncnn" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ncnn" RUN_TARGET_NAME="caffe2ncnn">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="fasterrcnn" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ncnn" TARGET_NAME="fasterrcnn" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ncnn" RUN_TARGET_NAME="fasterrcnn">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="generate-spirv" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ncnn" TARGET_NAME="generate-spirv" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="hed" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ncnn" TARGET_NAME="hed" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ncnn" RUN_TARGET_NAME="hed">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="mobilenetssd" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ncnn" TARGET_NAME="mobilenetssd" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ncnn" RUN_TARGET_NAME="mobilenetssd">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="mobilenetv2ssdlite" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ncnn" TARGET_NAME="mobilenetv2ssdlite" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ncnn" RUN_TARGET_NAME="mobilenetv2ssdlite">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ncnn" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ncnn" TARGET_NAME="ncnn" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ncnn2mem" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ncnn" TARGET_NAME="ncnn2mem" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ncnn" RUN_TARGET_NAME="ncnn2mem">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ncnnoptimize" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ncnn" TARGET_NAME="ncnnoptimize" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ncnn" RUN_TARGET_NAME="ncnnoptimize">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="peleenetssd_seg" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ncnn" TARGET_NAME="peleenetssd_seg" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ncnn" RUN_TARGET_NAME="peleenetssd_seg">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="rfcn" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ncnn" TARGET_NAME="rfcn" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ncnn" RUN_TARGET_NAME="rfcn">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="shufflenetv2" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ncnn" TARGET_NAME="shufflenetv2" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ncnn" RUN_TARGET_NAME="shufflenetv2">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="squeezenet" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ncnn" TARGET_NAME="squeezenet" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ncnn" RUN_TARGET_NAME="squeezenet">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="squeezenetssd" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ncnn" TARGET_NAME="squeezenetssd" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ncnn" RUN_TARGET_NAME="squeezenetssd">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="tensorflow2ncnn" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ncnn" TARGET_NAME="tensorflow2ncnn" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ncnn" RUN_TARGET_NAME="tensorflow2ncnn">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="yolov2" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ncnn" TARGET_NAME="yolov2" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ncnn" RUN_TARGET_NAME="yolov2">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="yolov3" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ncnn" TARGET_NAME="yolov3" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ncnn" RUN_TARGET_NAME="yolov3">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <list>
+      <item itemvalue="Application.Build All" />
+      <item itemvalue="Application.fasterrcnn" />
+      <item itemvalue="Application.hed" />
+      <item itemvalue="Application.mobilenetssd" />
+      <item itemvalue="Application.mobilenetv2ssdlite" />
+      <item itemvalue="Application.rfcn" />
+      <item itemvalue="Application.squeezenet" />
+      <item itemvalue="Application.squeezenetssd" />
+      <item itemvalue="Application.yolov2" />
+      <item itemvalue="Application.yolov3" />
+      <item itemvalue="Application.ncnn" />
+      <item itemvalue="Application.ncnn2mem" />
+      <item itemvalue="Application.caffe2ncnn" />
+      <item itemvalue="Application.tensorflow2ncnn" />
+      <item itemvalue="Application.peleenetssd_seg" />
+      <item itemvalue="Application.shufflenetv2" />
+      <item itemvalue="Application.generate-spirv" />
+      <item itemvalue="Application.ncnnoptimize" />
+    </list>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="d13ff6ee-de61-47e0-8c78-9a3e849ad2fb" name="Default Changelist" comment="" />
+      <created>1542222503753</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1542222503753</updated>
+      <workItem from="1542222504920" duration="11094000" />
+      <workItem from="1543997291442" duration="25682000" />
+      <workItem from="1551972067188" duration="1836000" />
+      <workItem from="1551975270971" duration="2381000" />
+      <workItem from="1556905604479" duration="1509000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TimeTrackingManager">
+    <option name="totallyTimeSpent" value="42502000" />
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="67" y="25" width="1849" height="903" extended-state="6" />
+    <editor active="true" />
+    <layout>
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.2241284" />
+      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
+      <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Find" order="1" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.32903227" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="Database Changes" order="7" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Messages" order="8" weight="0.32903227" />
+      <window_info anchor="bottom" id="Terminal" order="9" />
+      <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
+      <window_info anchor="bottom" id="Version Control" order="11" show_stripe_button="false" />
+      <window_info anchor="bottom" id="CMake" order="12" weight="0.32904884" />
+      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+      <window_info anchor="right" id="Database" order="3" />
+    </layout>
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
+  </component>
+  <component name="VcsContentAnnotationSettings">
+    <option name="myLimit" value="2678400000" />
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file:///usr/lib/gcc/x86_64-linux-gnu/7/include/omp.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="233">
+          <caret line="87" column="11" selection-start-line="87" selection-start-column="11" selection-end-line="87" selection-end-column="11" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/layer.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="375">
+          <caret line="25" column="27" selection-start-line="25" selection-start-column="27" selection-end-line="25" selection-end-column="27" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/mat.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="593">
+          <caret line="461" column="13" selection-start-line="461" selection-start-column="13" selection-end-line="461" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/layer/arm/deconvolutiondepthwise_arm.cpp">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/layer/arm/deconvolutiondepthwise_arm.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="165">
+          <caret line="11" column="77" lean-forward="true" selection-start-line="11" selection-start-column="77" selection-end-line="11" selection-end-column="77" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/include/c++/7/parallel/base.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="250">
+          <caret line="86" column="42" selection-start-line="86" selection-start-column="23" selection-end-line="86" selection-end-column="42" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/mat_pixel.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="30">
+          <caret line="2" column="53" selection-start-line="2" selection-start-column="50" selection-end-line="2" selection-end-column="53" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/include/c++/7/bits/stl_vector.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="233">
+          <caret line="241" column="49" selection-start-line="241" selection-start-column="40" selection-end-line="241" selection-end-column="49" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/cmake-build-debug/tools/tensorflow/node_def.pb.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="250">
+          <caret line="488" column="20" selection-start-line="488" selection-start-column="20" selection-end-line="488" selection-end-column="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/layer/convolutiondepthwisebnrelu.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="315">
+          <caret line="21" column="32" selection-start-line="21" selection-start-column="6" selection-end-line="21" selection-end-column="32" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/cpu.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="420">
+          <caret line="28" column="12" selection-start-line="28" selection-start-column="12" selection-end-line="28" selection-end-column="12" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/examples/hed.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="263">
+          <caret line="100" column="28" selection-start-line="100" selection-start-column="24" selection-end-line="100" selection-end-column="28" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/benchmark/benchncnn.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="458">
+          <caret line="96" column="25" lean-forward="true" selection-start-line="96" selection-start-column="25" selection-end-line="96" selection-end-column="25" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/build/CMakeCache.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="301">
+          <caret line="195" column="11" selection-start-line="195" selection-end-line="195" selection-end-column="11" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/build-android-armv7/CMakeCache.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="133">
+          <caret line="203" column="18" selection-start-line="203" selection-start-column="18" selection-end-line="203" selection-end-column="18" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/cpu.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="242">
+          <caret line="193" column="11" selection-start-line="193" selection-start-column="11" selection-end-line="193" selection-end-column="11" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/layer/convolutiondepthwisebnrelu.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="360">
+          <caret line="27" column="1" selection-start-line="27" selection-start-column="1" selection-end-line="27" selection-end-column="1" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="319">
+          <caret line="23" column="18" selection-start-line="23" selection-start-column="7" selection-end-line="23" selection-end-column="18" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tools/tensorflow/tensorflow2ncnn.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="683">
+          <caret line="461" column="47" selection-start-line="461" selection-start-column="47" selection-end-line="461" selection-end-column="47" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/build/examples/hed-ncnn.param">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="210">
+          <caret line="18" column="22" selection-start-line="18" selection-start-column="22" selection-end-line="18" selection-end-column="22" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/net.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="654">
+          <caret line="2040" selection-start-line="2040" selection-end-line="2040" />
+          <folding>
+            <element signature="e#71125#72786#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/layer_type_enum.h.in">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/layer_declaration.h.in">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/layer.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="329">
+          <caret line="22" column="16" selection-start-line="22" selection-start-column="16" selection-end-line="22" selection-end-column="16" />
+          <folding>
+            <element signature="e#948#1017#0" expanded="true" />
+            <element signature="e#2513#3363#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/layer/convolutionbnrelu.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-487" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/layer/convolutionbnrelu.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="324">
+          <caret line="131" column="5" selection-start-line="131" selection-start-column="5" selection-end-line="131" selection-end-column="5" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/layer/convolution.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-352" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/layer/convolution.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1035" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="213">
+          <caret line="230" column="21" selection-start-line="230" selection-start-column="21" selection-end-line="230" selection-end-column="21" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/opencv.cpp">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/net.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="265">
+          <caret line="116" lean-forward="true" selection-start-line="116" selection-end-line="116" />
+        </state>
+      </provider>
+    </entry>
+  </component>
+</project>

@@ -673,6 +673,7 @@ int Net::load_model(FILE* fp)
 #endif // NCNN_VULKAN
 
     fuse_network();
+    printf("load model end\n");
 
     return ret;
 }

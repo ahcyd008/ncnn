@@ -27,10 +27,7 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d13ff6ee-de61-47e0-8c78-9a3e849ad2fb" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/net.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/net.cpp" afterDir="false" />
-    </list>
+    <list default="true" id="d13ff6ee-de61-47e0-8c78-9a3e849ad2fb" name="Default Changelist" comment="" />
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -87,81 +84,7 @@
     </session>
   </component>
   <component name="FileEditorManager">
-    <leaf>
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/net.cpp">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="426">
-              <caret line="2287" column="44" lean-forward="true" selection-start-line="2287" selection-start-column="44" selection-end-line="2287" selection-end-column="44" />
-              <folding>
-                <element signature="e#30929#31162#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/layer.h">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="329">
-              <caret line="22" column="16" selection-start-line="22" selection-start-column="16" selection-end-line="22" selection-end-column="16" />
-              <folding>
-                <element signature="e#948#1017#0" expanded="true" />
-                <element signature="e#2513#3363#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/layer/convolutionbnrelu.h">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-487" />
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/layer/convolutionbnrelu.cpp">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="324">
-              <caret line="131" column="5" selection-start-line="131" selection-start-column="5" selection-end-line="131" selection-end-column="5" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/layer/convolution.h">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-352" />
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/layer/convolution.cpp">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-1035" />
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/CMakeLists.txt">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="213">
-              <caret line="230" column="21" selection-start-line="230" selection-start-column="21" selection-end-line="230" selection-end-column="21" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/net.h">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="325">
-              <caret line="120" column="10" selection-start-line="120" selection-start-column="10" selection-end-line="120" selection-end-column="10" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-    </leaf>
+    <leaf />
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
@@ -371,19 +294,19 @@
       <item itemvalue="Application.hed" />
       <item itemvalue="Application.mobilenetssd" />
       <item itemvalue="Application.mobilenetv2ssdlite" />
+      <item itemvalue="Application.peleenetssd_seg" />
       <item itemvalue="Application.rfcn" />
+      <item itemvalue="Application.shufflenetv2" />
       <item itemvalue="Application.squeezenet" />
       <item itemvalue="Application.squeezenetssd" />
       <item itemvalue="Application.yolov2" />
       <item itemvalue="Application.yolov3" />
+      <item itemvalue="Application.generate-spirv" />
       <item itemvalue="Application.ncnn" />
       <item itemvalue="Application.ncnn2mem" />
+      <item itemvalue="Application.ncnnoptimize" />
       <item itemvalue="Application.caffe2ncnn" />
       <item itemvalue="Application.tensorflow2ncnn" />
-      <item itemvalue="Application.peleenetssd_seg" />
-      <item itemvalue="Application.shufflenetv2" />
-      <item itemvalue="Application.generate-spirv" />
-      <item itemvalue="Application.ncnnoptimize" />
     </list>
   </component>
   <component name="SvnConfiguration">
@@ -400,16 +323,15 @@
       <workItem from="1543997291442" duration="25682000" />
       <workItem from="1551972067188" duration="1836000" />
       <workItem from="1551975270971" duration="2381000" />
-      <workItem from="1556905604479" duration="1923000" />
+      <workItem from="1556905604479" duration="2235000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="42916000" />
+    <option name="totallyTimeSpent" value="43228000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="67" y="25" width="1849" height="903" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.2241284" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
@@ -634,8 +556,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/net.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="426">
-          <caret line="2287" column="44" lean-forward="true" selection-start-line="2287" selection-start-column="44" selection-end-line="2287" selection-end-column="44" />
+        <state relative-caret-position="366">
+          <caret line="2283" lean-forward="true" selection-start-line="2283" selection-end-line="2283" />
           <folding>
             <element signature="e#30929#31162#0" expanded="true" />
           </folding>
